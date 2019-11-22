@@ -4,8 +4,10 @@ import cn.lqf.core.dao.item.ItemCatDao;
 import cn.lqf.core.pojo.item.Item;
 import cn.lqf.core.pojo.item.ItemCat;
 import cn.lqf.core.pojo.item.ItemCatQuery;
+import cn.lqf.core.util.Constants;
 import com.alibaba.dubbo.config.annotation.Service;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 
 import java.util.List;
 
@@ -14,8 +16,19 @@ public class ItemCatServiceImpl implements ItemCatService{
 
     @Autowired
     private ItemCatDao itemCatDao;
+
+    @Autowired
+    private RedisTemplate redisTemplate;
     @Override
     public List<ItemCat> findByParentId(Long parentId) {
+
+        //获取所有分类数据
+        List<ItemCat> itemCatsAll = itemCatDao.selectByExample(null);
+        //分类名称作为key  模板的id作为value
+        for (ItemCat itemCat : itemCatsAll) {
+            redisTemplate.boundHashOps(Constants.CATEGORY_LIST_REDIS).put(itemCat.getName(),itemCat.getTypeId());
+        }
+        //跟据父级id  查询他的子集 展示到页面
         ItemCatQuery query = new ItemCatQuery();
         ItemCatQuery.Criteria criteria = query.createCriteria();
         criteria.andParentIdEqualTo(parentId);
@@ -24,6 +37,7 @@ public class ItemCatServiceImpl implements ItemCatService{
 
     @Override
     public ItemCat findOne(Long id) {
+
         return itemCatDao.selectByPrimaryKey(id);
     }
 
@@ -33,6 +47,7 @@ public class ItemCatServiceImpl implements ItemCatService{
         //ItemCatQuery.Criteria criteria = query.createCriteria();
         itemCat.setParentId(itemCat.getParentId());
         itemCatDao.insert(itemCat);
+
     }
 
     @Override

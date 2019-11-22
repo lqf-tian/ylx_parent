@@ -7,11 +7,13 @@ import cn.lqf.core.pojo.specification.SpecificationOption;
 import cn.lqf.core.pojo.specification.SpecificationOptionQuery;
 import cn.lqf.core.pojo.template.TypeTemplate;
 import cn.lqf.core.pojo.template.TypeTemplateQuery;
+import cn.lqf.core.util.Constants;
 import com.alibaba.dubbo.config.annotation.Service;
 import com.alibaba.fastjson.JSON;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 
 import java.util.List;
 import java.util.Map;
@@ -24,9 +26,27 @@ public class TypeTemplateServiceImpl implements TypeTemplateService {
 
     @Autowired
     private SpecificationOptionDao specificationOptionDao;
+
+    @Autowired
+    private RedisTemplate redisTemplate;
     //分页条件查询
     @Override
     public PageResult seacher(TypeTemplate typeTemplate, int pageNum, int pageSize) {
+
+        //redis中缓存模板的所有数据
+        List<TypeTemplate> typeTemplatesAll = typeTemplateDao.selectByExample(null);
+        //模板的id 作为键  品牌集合作为vlaue 存入redis中
+        for (TypeTemplate template : typeTemplatesAll) {
+            String brandIdsJsonStr = template.getBrandIds();
+            //将json转成集合存入redis
+            List<Map> brandList = JSON.parseArray(brandIdsJsonStr, Map.class);
+            redisTemplate.boundHashOps(Constants.BRAND_LIST_REDIS).put(template.getId(),brandList);
+            //模板的id 作为键  规格集合作为vlaue 存入redis中
+            List<Map> specList = findBySpecList(template.getId());
+            redisTemplate.boundHashOps(Constants.SPEC_LIST_REDIS).put(template.getId(),specList);
+
+        }
+        //模板分页
         PageHelper.startPage(pageNum,pageSize);
         TypeTemplateQuery templateQuery = new TypeTemplateQuery();
         TypeTemplateQuery.Criteria criteria = templateQuery.createCriteria();
