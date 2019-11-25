@@ -5,6 +5,7 @@ import cn.lqf.core.util.Constants;
 import com.alibaba.dubbo.config.annotation.Service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.solr.core.SolrTemplate;
 import org.springframework.data.solr.core.query.*;
@@ -58,7 +59,7 @@ public class SearchServiceImpl implements SearchService{
         //1.根据参数关键字 到solr中（带分页）总条数、总页数
         Map<String, Object> resultMap = highlightSearch(paramMap);
 
-        //2.根据查询的参数 到solr中获取对应的分类结果，印分类有重复，按分组的方式去重
+        //2.根据查询的参数 到solr中获取对应的分类结果，因为分类有重复，按分组的方式去重
         List<String> groupCatgroupList = findGroupCatgroupList(paramMap);
         resultMap.put("categoryList",groupCatgroupList);
         //3.判断paramMap传入的参数中是否有分类的名称
@@ -102,6 +103,57 @@ public class SearchServiceImpl implements SearchService{
         //设置没页多少条
         query.setRows(pageSize);
 
+        //按分类筛选
+        if (paramMap.get("category") != null &&!"".equals(paramMap.get("category"))){
+            Criteria filterCriteria = new Criteria("item_category").is(paramMap.get("category"));
+            SimpleFilterQuery filterQuery = new SimpleFilterQuery(filterCriteria);
+            query.addFilterQuery(filterQuery);
+        }
+        //按照品牌筛选
+        if (paramMap.get("brand") != null && !"".equals(paramMap.get("brand"))){
+            Criteria filterCriteria = new Criteria("item_brand").is(paramMap.get("brand"));
+            SimpleFilterQuery filterQuery = new SimpleFilterQuery(filterCriteria);
+            query.addFilterQuery(filterQuery);
+        }
+        //按照规格筛选
+        if (paramMap.get("spec") != null && !"".equals(paramMap.get("spec"))){
+            Map<String,String> specMap = (Map<String, String>) paramMap.get("spec");
+            for (String key : specMap.keySet()){
+                Criteria filterCriteria = new Criteria("item_spec_" + key).is(specMap.get(key));
+                SimpleFilterQuery filterQuery = new SimpleFilterQuery(filterCriteria);
+                query.addFilterQuery(filterQuery);
+            }
+        }
+        //按价格
+        if(!"".equals(paramMap.get("price"))){
+            String[] price = ((String) paramMap.get("price")).split("-");
+            if(!price[0].equals("0")){//如果区间起点不等于0
+                Criteria filterCriteria=new Criteria("item_price").greaterThanEqual(price[0]);
+                FilterQuery filterQuery=new SimpleFilterQuery(filterCriteria);
+                query.addFilterQuery(filterQuery);
+            }
+            if(!price[1].equals("*")){//如果区间终点不等于*
+                Criteria filterCriteria=new Criteria("item_price").lessThanEqual(price[1]);
+                FilterQuery filterQuery=new SimpleFilterQuery(filterCriteria);
+                query.addFilterQuery(filterQuery);
+            }
+
+        }
+        //排序
+        String sortValue = (String) paramMap.get("sort");//ASC  DESC
+        String sortField = (String) paramMap.get("sortField");//排序字段
+        if (sortValue != null && !sortValue.equals("")) {
+            if (sortValue.equals("ASC")) {
+                Sort sort = new Sort(Sort.Direction.ASC, "item_" + sortField);
+                query.addSort(sort);
+            }
+            if (sortValue.equals("DESC")) {
+                Sort sort = new Sort(Sort.Direction.DESC, "item_" + sortField);
+                query.addSort(sort);
+            }
+        }
+
+
         //创建高亮显示对象
         HighlightOptions highlightOptions = new HighlightOptions();
         //设置那个域需要高亮显示
@@ -117,10 +169,11 @@ public class SearchServiceImpl implements SearchService{
         HighlightPage<Item> items = solrTemplate.queryForHighlightPage(query, Item.class);
         //获取带高亮的集合
         List<HighlightEntry<Item>> highlighted = items.getHighlighted();
-        //创建一个新的集合，用来接收
+        //创建一个新的集合，用来接收高亮集合
         List<Item> itemList = new ArrayList<>();
         //遍历高亮集合
         for (HighlightEntry<Item> itemHighlightEntry : highlighted) {
+            //获取到不带高亮的集合
             Item item = itemHighlightEntry.getEntity();
             List<HighlightEntry.Highlight> highlights = itemHighlightEntry.getHighlights();
             if (highlights != null && highlights.size() > 0){
@@ -138,7 +191,7 @@ public class SearchServiceImpl implements SearchService{
         //查询到的结果集
         resultMap.put("rows",itemList);
         //总页数
-        resultMap.put("totalPage",items.getTotalPages());
+        resultMap.put("totalPages",items.getTotalPages());
         //总条数
         resultMap.put("total",items.getTotalElements());
 
