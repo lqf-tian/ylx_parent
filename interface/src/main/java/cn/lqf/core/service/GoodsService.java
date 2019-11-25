@@ -16,9 +16,10 @@ public interface GoodsService {
     void update(GoodsEntity goodsEntity);
     //删除
     void delete(Long[] ids);
+    void delete(Long id);
 
     //审核updateStatus
-    void updateStatus(Long[] ids,String status);
+    void updateStatus(Long id,String status);
 
     //商品上下架
     void updateisMarkeTable(Long[] ids, String isMarkeTable);

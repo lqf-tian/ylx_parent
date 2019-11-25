@@ -83,6 +83,9 @@ public class SearchServiceImpl implements SearchService{
     private Map<String,Object> highlightSearch(Map paramMap){
         //获取关键字
         String keywords = (String)paramMap.get("keywords");
+        if (keywords != null){
+            keywords = keywords.replaceAll(" ", "");
+        }
         //当前页
         Integer pageNo =(Integer) paramMap.get("pageNo");
         //每页查询多少条
@@ -144,6 +147,7 @@ public class SearchServiceImpl implements SearchService{
         String sortField = (String) paramMap.get("sortField");//排序字段
         if (sortValue != null && !sortValue.equals("")) {
             if (sortValue.equals("ASC")) {
+                //创建排序对象         枚举
                 Sort sort = new Sort(Sort.Direction.ASC, "item_" + sortField);
                 query.addSort(sort);
             }
@@ -205,6 +209,9 @@ public class SearchServiceImpl implements SearchService{
 
         //获取关键字
         String keywords = String.valueOf(paramMap.get("keywords"));
+        if (keywords != null){
+            keywords = keywords.replaceAll(" ", "");
+        }
         //创建查询对象
         SimpleQuery query = new SimpleQuery();
         //创建查询条件对象

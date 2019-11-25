@@ -4,8 +4,12 @@ import cn.lqf.core.entity.GoodsEntity;
 import cn.lqf.core.entity.PageResult;
 import cn.lqf.core.entity.Result;
 import cn.lqf.core.pojo.good.Goods;
+import cn.lqf.core.pojo.item.ItemQuery;
 import cn.lqf.core.service.GoodsService;
+import cn.lqf.core.service.SolrManagerService;
 import com.alibaba.dubbo.config.annotation.Reference;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.solr.core.SolrTemplate;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -15,6 +19,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/goods")
 public class GoodsController {
 
+    @Reference
+    private SolrManagerService solrManagerService;
     @Reference
     private GoodsService goodsService;
     @RequestMapping("/add")
@@ -71,7 +77,13 @@ public class GoodsController {
     @RequestMapping("/delete")
     public Result delete(Long[] ids){
         try {
-            goodsService.delete(ids);
+            if (ids != null){
+                for (Long id : ids) {
+                    goodsService.delete(id);
+                    //根据商品id 删除solr索引库中的数据
+                    solrManagerService.deleteItemFromSolr(id);
+                }
+            }
             return  new Result(true,"删除成功");
         }catch (Exception e){
             e.printStackTrace();
@@ -84,7 +96,12 @@ public class GoodsController {
     @RequestMapping("/updateIsMarkeTable")
     public Result updateIsMarkeTable(Long[] ids,String isMarkeTable){
         try {
-            goodsService.updateisMarkeTable(ids,isMarkeTable);
+            if (ids !=null){
+                for (Long id : ids) {
+                    goodsService.updateisMarkeTable(ids,isMarkeTable);
+                }
+            }
+
             return new Result(true,"成功");
         }catch (Exception e){
             e.printStackTrace();

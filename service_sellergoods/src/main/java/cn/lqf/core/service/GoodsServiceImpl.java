@@ -17,6 +17,7 @@ import cn.lqf.core.pojo.item.ItemCat;
 import cn.lqf.core.pojo.item.ItemCatQuery;
 import cn.lqf.core.pojo.item.ItemQuery;
 import cn.lqf.core.pojo.seller.Seller;
+import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.dubbo.config.annotation.Service;
 import com.alibaba.fastjson.JSON;
 import com.github.pagehelper.Page;
@@ -35,6 +36,8 @@ import java.util.Map;
 @Service
 @Transactional
 public class GoodsServiceImpl implements GoodsService{
+    @Reference
+    private SolrManagerService solrManagerService;
     @Autowired
     private GoodsDao goodsDao; //商品
     @Autowired
@@ -211,14 +214,29 @@ public class GoodsServiceImpl implements GoodsService{
         }
     }
 
+    @Override
+    public void delete(Long id) {
+        Goods goods = new Goods();
+        goods.setId(id);
+        goods.setIsDelete("1");
+        goodsDao.updateByPrimaryKeySelective(goods);
+    }
+
     //审核
     @Override
-    public void updateStatus(Long[] ids, String status) {
-        for (Long id : ids) {
-            Goods goods = goodsDao.selectByPrimaryKey(id);
-            goods.setAuditStatus(status);
-            goodsDao.updateByPrimaryKeySelective(goods);
-        }
+    public void updateStatus(Long id, String status) {
+        //1.根据商品的id 修改商品的状态码
+        Goods goods = new Goods();
+        goods.setId(id);
+        goods.setAuditStatus(status);
+        goodsDao.updateByPrimaryKeySelective(goods);
+        //2根据商品的id  修改库存对象的状态码
+        Item item = new Item();
+        item.setStatus(status);
+        ItemQuery query = new ItemQuery();
+        ItemQuery.Criteria criteria = query.createCriteria();
+        criteria.andGoodsIdEqualTo(id);
+        itemDao.updateByExampleSelective(item,query);
     }
 
     //商品上下架
@@ -226,7 +244,14 @@ public class GoodsServiceImpl implements GoodsService{
     public void updateisMarkeTable(Long[] ids, String isMarkeTable) {
         for (Long id : ids) {
             Goods goods = goodsDao.selectByPrimaryKey(id);
-            goods.setIsMarketable(isMarkeTable);
+            if ("1".equals(goods.getAuditStatus())){
+                goods.setIsMarketable(isMarkeTable);
+                if ("1".equals(isMarkeTable)){
+                    solrManagerService.saveItemToSolr(id);
+                }else {
+                    solrManagerService.deleteItemFromSolr(id);
+                }
+            }
             goodsDao.updateByPrimaryKeySelective(goods);
         }
     }

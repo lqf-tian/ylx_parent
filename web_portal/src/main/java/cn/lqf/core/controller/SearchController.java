@@ -15,6 +15,7 @@ public class SearchController {
     @Reference
     private SearchService searchService;
 
+    //搜索功能的实现
     @RequestMapping("/search")
     public Map<String ,Object> sarcha(@RequestBody Map paramMap){
         Map<String, Object> resultMap = searchService.search(paramMap);
