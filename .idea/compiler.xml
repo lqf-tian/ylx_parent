@@ -9,6 +9,7 @@
         <module name="common" />
         <module name="dao" />
         <module name="fastDfsDemo" />
+        <module name="freemarkerDemo" />
         <module name="interface" />
         <module name="pojo" />
         <module name="service_buyer" />

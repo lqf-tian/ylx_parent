@@ -5,6 +5,7 @@ import cn.lqf.core.entity.PageResult;
 import cn.lqf.core.entity.Result;
 import cn.lqf.core.pojo.good.Goods;
 import cn.lqf.core.pojo.item.ItemQuery;
+import cn.lqf.core.service.CmsService;
 import cn.lqf.core.service.GoodsService;
 import cn.lqf.core.service.SolrManagerService;
 import com.alibaba.dubbo.config.annotation.Reference;
@@ -15,10 +16,14 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Map;
+
 @RestController
 @RequestMapping("/goods")
 public class GoodsController {
 
+    @Reference
+    private CmsService cmsService;
     @Reference
     private SolrManagerService solrManagerService;
     @Reference
@@ -64,7 +69,17 @@ public class GoodsController {
             if (!userName.equals(sellerId)){
                 return  new Result(false,"您没有权限修改");
             }
+            Long goodsId = goodsEntity.getGoods().getId();
             goodsService.update(goodsEntity);
+            //商家在修改后台数据时，要从新查找数据，并且生成相应的详情页面才能够保证
+            //数据更新后详情页面也更新
+            Map<String, Object> goodsData = cmsService.findGoodsData(goodsId);
+            cmsService.createStaticPage(goodsId,goodsData);
+            if ("1".equals(goodsEntity.getGoods().getIsMarketable())){
+                solrManagerService.deleteItemFromSolr(goodsId);
+                solrManagerService.saveItemToSolr(goodsId);
+            }
+
             return  new Result(true,"修改成功");
         }catch (Exception e){
             e.printStackTrace();
