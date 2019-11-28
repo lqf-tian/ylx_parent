@@ -18,7 +18,9 @@
         <module name="service_search" />
         <module name="service_sellergoods" />
         <module name="service_user" />
+        <module name="smsDemo" />
         <module name="solr" />
+        <module name="springbootDemo" />
         <module name="springDataRedis" />
         <module name="springDataSolr" />
         <module name="springsecurityDemo" />

@@ -22,6 +22,8 @@
         <option value="$PROJECT_DIR$/../springDataRedis/pom.xml" />
         <option value="$PROJECT_DIR$/../freemarkerDemo/pom.xml" />
         <option value="$PROJECT_DIR$/../ActiveDemo/pom.xml" />
+        <option value="$PROJECT_DIR$/../springbootDemo/pom.xml" />
+        <option value="$PROJECT_DIR$/../smsDemo/pom.xml" />
       </list>
     </option>
   </component>
