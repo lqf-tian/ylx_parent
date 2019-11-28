@@ -22,10 +22,10 @@ import java.util.Map;
 @RequestMapping("/goods")
 public class GoodsController {
 
-    @Reference
+/*    @Reference
     private CmsService cmsService;
     @Reference
-    private SolrManagerService solrManagerService;
+    private SolrManagerService solrManagerService;*/
     @Reference
     private GoodsService goodsService;
     @RequestMapping("/add")
@@ -73,12 +73,12 @@ public class GoodsController {
             goodsService.update(goodsEntity);
             //商家在修改后台数据时，要从新查找数据，并且生成相应的详情页面才能够保证
             //数据更新后详情页面也更新
-            Map<String, Object> goodsData = cmsService.findGoodsData(goodsId);
+            /*Map<String, Object> goodsData = cmsService.findGoodsData(goodsId);
             cmsService.createStaticPage(goodsId,goodsData);
             if ("1".equals(goodsEntity.getGoods().getIsMarketable())){
                 solrManagerService.deleteItemFromSolr(goodsId);
                 solrManagerService.saveItemToSolr(goodsId);
-            }
+            }*/
 
             return  new Result(true,"修改成功");
         }catch (Exception e){
@@ -96,7 +96,7 @@ public class GoodsController {
                 for (Long id : ids) {
                     goodsService.delete(id);
                     //根据商品id 删除solr索引库中的数据
-                    solrManagerService.deleteItemFromSolr(id);
+                    //solrManagerService.deleteItemFromSolr(id);
                 }
             }
             return  new Result(true,"删除成功");

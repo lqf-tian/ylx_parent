@@ -6,6 +6,7 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
+        <module name="ActiveDemo" />
         <module name="common" />
         <module name="dao" />
         <module name="fastDfsDemo" />

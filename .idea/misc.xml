@@ -21,8 +21,12 @@
         <option value="$PROJECT_DIR$/../../springsecurityDemo/pom.xml" />
         <option value="$PROJECT_DIR$/../springDataRedis/pom.xml" />
         <option value="$PROJECT_DIR$/../freemarkerDemo/pom.xml" />
+        <option value="$PROJECT_DIR$/../ActiveDemo/pom.xml" />
       </list>
     </option>
+  </component>
+  <component name="ProjectResources">
+    <resource url="http://activemq.apache.org/schema/core" location="$MAVEN_REPOSITORY$/org/apache/activemq/activemq-all/5.2.0/activemq-all-5.2.0.jar!/activemq.xsd" />
   </component>
   <component name="ProjectRootManager" version="2" languageLevel="JDK_1_8" project-jdk-name="1.8" project-jdk-type="JavaSDK">
     <output url="file://$PROJECT_DIR$/out" />
