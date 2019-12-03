@@ -142,6 +142,8 @@ public class GoodsServiceImpl implements GoodsService{
         //品牌的名称
         Brand brand = brandDao.selectByPrimaryKey(goodsEntity.getGoods().getBrandId());
         item.setBrand(brand.getName());
+        //卖家id
+        item.setSellerId(goodsEntity.getGoods().getSellerId());
         //卖家的名称
         Seller seller = sellerDao.selectByPrimaryKey(goodsEntity.getGoods().getSellerId());
         item.setSeller(seller.getName());

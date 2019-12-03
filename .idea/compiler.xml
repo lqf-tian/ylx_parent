@@ -7,6 +7,8 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="ActiveDemo" />
+        <module name="casDemo" />
+        <module name="casDemo2" />
         <module name="common" />
         <module name="dao" />
         <module name="fastDfsDemo" />

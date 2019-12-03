@@ -246,7 +246,6 @@ public class SearchServiceImpl implements SearchService{
     private  Map findSpecListBrand(String categoryName){
         //a.根据分类名称到 redis中查询对相应的模板id
         Long templateId =(Long) redisTemplate.boundHashOps(Constants.CATEGORY_LIST_REDIS).get(categoryName);
-        System.out.println(templateId);
         //b.根据模板id去redis中去查询对应的品牌集合
         List<Map> brandList = (List<Map>)redisTemplate.boundHashOps(Constants.BRAND_LIST_REDIS).get(templateId);
         //c.根据模板id去redis去查询对应的规格集合
